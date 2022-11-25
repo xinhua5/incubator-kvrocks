@@ -36,9 +36,9 @@
 #include "util.h"
 
 namespace Redis {
-const size_t PROTO_INLINE_MAX_SIZE = 16 * 1024L;
-const size_t PROTO_BULK_MAX_SIZE = 512 * 1024L * 1024L;
-const size_t PROTO_MULTI_MAX_SIZE = 1024 * 1024L;
+size_t Request::PROTO_INLINE_MAX_SIZE = 16 * 1024L;
+size_t Request::PROTO_BULK_MAX_SIZE = 512 * 1024L * 1024L;
+size_t Request::PROTO_MULTI_MAX_SIZE = 10 * 1024 * 1024L;
 
 Status Request::Tokenize(evbuffer *input) {
   size_t pipeline_size = 0;
@@ -73,7 +73,7 @@ Status Request::Tokenize(evbuffer *input) {
             return Status(Status::NotOK, "Protocol error: invalid multibulk length");
           }
           multi_bulk_len_ = *parse_result;
-          if (isOnlyLF || multi_bulk_len_ > (int64_t)PROTO_MULTI_MAX_SIZE) {
+          if (isOnlyLF || multi_bulk_len_ > (int64_t)Request::PROTO_MULTI_MAX_SIZE) {
             return Status(Status::NotOK, "Protocol error: invalid multibulk length");
           }
           if (multi_bulk_len_ <= 0) {
@@ -82,7 +82,7 @@ Status Request::Tokenize(evbuffer *input) {
           }
           state_ = BulkLen;
         } else {
-          if (line.length > PROTO_INLINE_MAX_SIZE) {
+          if (line.length > Request::PROTO_INLINE_MAX_SIZE) {
             return Status(Status::NotOK, "Protocol error: invalid bulk length");
           }
           tokens_ = Util::Split(std::string(line.get(), line.length), " \t");
@@ -103,7 +103,7 @@ Status Request::Tokenize(evbuffer *input) {
           return Status(Status::NotOK, "Protocol error: invalid bulk length");
         }
         bulk_len_ = *parse_result;
-        if (bulk_len_ > PROTO_BULK_MAX_SIZE) {
+        if (bulk_len_ > Request::PROTO_BULK_MAX_SIZE) {
           return Status(Status::NotOK, "Protocol error: invalid bulk length");
         }
         state_ = BulkData;
