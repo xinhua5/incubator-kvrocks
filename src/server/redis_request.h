@@ -58,6 +58,10 @@ class Request {
   CommandTokens tokens_;
   std::deque<CommandTokens> commands_;
 
+  static size_t proto_inline_max_size_;
+  static size_t proto_bulk_max_size_;
+  static size_t proto_multi_max_size_;
+  
   Server *svr_;
 };
 
